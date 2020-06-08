@@ -54,12 +54,12 @@ FusionEKF::FusionEKF() {
   Eigen::MatrixXd F_ = MatrixXd(4, 4);
   F_ << 1, 0, 1, 0,
   		0, 1, 0, 1,
-  		0, 0, 0, 0,
+  		0, 0, 1, 0,
   		0, 0, 0, 1;
   
   //H Measurement matrix for Laser
   H_laser_ << 1, 0, 0, 0,
-  			0, 1, 0, 0;
+			0, 1, 0, 0;
   
   //Hj Jacobian matrix
   
@@ -154,7 +154,12 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
     // TODO: Radar updates
-    ekf_.R_ = R_radar_;
+    // Calculate H for Radar 
+	Hj_ = tools.CalculateJacobian(ekf_.x_);	
+	ekf_.H_ = Hj_;
+	// Set R Matrix 
+	ekf_.R_ = R_radar_;
+	// Call update function for RADAR
     ekf_.UpdateEKF(measurement_pack.raw_measurements_);
   } else {
     // TODO: Laser updates
